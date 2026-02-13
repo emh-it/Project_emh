@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PCI DSS Report on Compliance</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <style>
+      body {
+        background: #f4f4f4;
+      }
+
+      .header-bar {
+        background: #e1701a;
+        color: #222;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.3rem;
+        padding: 8px 0;
+        margin-bottom: 0;
+      }
+
+      .main-table,
+      .main-table th,
+      .main-table td {
+        border: 1px solid #888;
+        border-collapse: collapse;
+      }
+
+      .main-table th,
+      .main-table td {
+        padding: 4px 8px;
+        background: #eaf3fa;
+      }
+
+      .main-table th {
+        background: #dbeaf7;
+        font-weight: bold;
+      }
+
+      .section-table,
+      .section-table th,
+      .section-table td {
+        border: 1px solid #888;
+        border-collapse: collapse;
+      }
+
+      .section-table th,
+      .section-table td {
+        padding: 2px 6px;
+        background: #fff;
+        vertical-align: top;
+      }
+
+      .section-table th {
+        background: #f2f2f2;
+        font-weight: normal;
+        width: 160px;
+        white-space: nowrap;
+      }
+
+      .desc-cell {
+        height: 60px;
+      }
+
+      .req-header {
+        background: #dbeaf7;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .scope-col {
+        min-width: 60px;
+      }
+
+      .yn-col {
+        min-width: 40px;
+      }
+
+      /* sidebar click styling */
+      .req-row {
+        cursor: pointer;
+      }
+
+      .req-row:hover {
+        background: #f6f6f6;
+      }
+
+      .req-row.active {
+        background: #eef5ff;
+        font-weight: 600;
+      }
+
+      .req-row.child-req td:nth-child(2) {
+        color: #333;
+      }
+
+      .req-row.child-req td:first-child {
+        padding-left: 18px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header-bar">PCI DSS Report on Compliance</div>
+
+    <div class="row" style="margin-bottom: 0">
+      <!-- LEFT -->
+      <div class="container_left">
+        <div class="col s3">
+          <table style="width: 100%; border: none">
+            <tr>
+              <th class="req-header" colspan="2">PCI Requirements</th>
+            </tr>
+
+            {% for kind, r in sidebar_items %}
+            <tr
+              class="req-row {% if selected and r.requirement_id == selected.requirement_id %}active{% endif %} {% if kind == 'child' %}child-req{% endif %}"
+              data-rid="{{ r.requirement_id }}"
+              onclick="loadPanel('{{ r.requirement_id }}')"
+            >
+              <td style="width: 70px">{{ r.requirement_id }}</td>
+
+              <td>{{ r.requirement_text }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+      <!-- RIGHT -->
+      <div class="col s9" id="right-panel">{% include "app/panel.html" %}</div>
+    </div>
+
+    <script>
+      async function loadPanel(rid) {
+        const res = await fetch(`/panel/${rid}/`);
+        const data = await res.json();
+
+        document.getElementById("right-panel").innerHTML = data.html;
+
+        // sidebar active highlight
+        document
+          .querySelectorAll(".req-row")
+          .forEach((el) => el.classList.remove("active"));
+        const active = document.querySelector(`.req-row[data-rid="${rid}"]`);
+        if (active) active.classList.add("active");
+      }
+    </script>
+  </body>
+</html>

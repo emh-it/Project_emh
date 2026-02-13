@@ -1,0 +1,86 @@
+<table class="main-table" style="width: 100%">
+    {% if not selected %}
+    <tr>
+        <th style="text-align:left;">No selection</th>
+    </tr>
+    <tr>
+        <td>Select a requirement from the left.</td>
+    </tr>
+    {% else %}
+    <tr>
+        <th colspan="2" style="text-align: left">{{ selected.requirement_id }}</th>
+    </tr>
+
+    <tr>
+        <td colspan="2" style="vertical-align: top">
+            <div>
+                <table class="section-table" style="width: 100%; margin-bottom: 10px">
+                    <tr>
+                        <td colspan="6" class="desc-cell">
+                            <b>Description:</b><br />
+                            {{ selected.requirement_text }}
+                        </td>
+                    </tr>
+
+                    {% if procedures %}
+                    {% for p in procedures %}
+                    <tr>
+                        <th>Testing Procedure</th>
+                        <td colspan="5">
+                            <b>{{ p.procedure_id }}</b> {{ p.procedure_text }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Guidance</th>
+                        <td colspan="5">{{ p.reporting_instruction }}</td>
+                    </tr>
+
+                    <!-- placeholders -->
+                    <tr>
+                        <th>Applicability</th>
+                        <td colspan="3"></td>
+                        <th class="scope-col">Scope</th>
+                        <td class="yn-col">Y/N</td>
+                    </tr>
+                    <tr>
+                        <th>Doc Ref</th>
+                        <th>Name</th>
+                        <td colspan="3"></td>
+                        <th>Upload</th>
+                    </tr>
+                    <tr>
+                        <th>Evidence Ref</th>
+                        <th>Name</th>
+                        <td colspan="2"></td>
+                        <th>Upload</th>
+                    </tr>
+                    <tr>
+                        <th>Client Comments</th>
+                        <td colspan="5"></td>
+                    </tr>
+                    <tr>
+                        <th>QSA Remarks</th>
+                        <td colspan="5"></td>
+                    </tr>
+
+                    {% if not forloop.last %}
+                    <tr>
+                        <td colspan="6" style="background:#eaf3fa; height:8px;"></td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <th>Testing Procedure</th>
+                        <td colspan="5">
+                            No testing procedures found for this requirement.
+                            <br />If this is a parent requirement, select a sub-requirement from the left.
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </td>
+    </tr>
+    {% endif %}
+</table>
