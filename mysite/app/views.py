@@ -1,20 +1,71 @@
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+import os
+# Create your views here.
+
+from django.views.decorators.http import require_POST
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 # from .models import PciRequirement
 import json
-
-# Create your views here.
-
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from .models import PCIRequirement
+from django.utils import timezone
+from .models import PCITestingProcedure
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
+ms_identity_web = settings.MS_IDENTITY_WEB
+# Create your views here.
+
+
+
+@require_POST
+def delete_file(request, pid, field):
+    procedure = get_object_or_404(PCITestingProcedure, id=pid)
+    if field not in ["doc_ref_file", "evidence_ref_file"]:
+        return JsonResponse({"error": "Invalid field"}, status=400)
+    file_field = getattr(procedure, field)
+    if file_field:
+        # Remove file from storage
+        file_path = file_field.path
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+        # Remove reference from model
+        setattr(procedure, field, None)
+        procedure.save()
+    return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+def save_procedure(request, pid):
+    procedure = get_object_or_404(PCITestingProcedure, id=pid)
+
+    if request.method == "POST":
+        procedure.scope = request.POST.get("scope")
+        procedure.applicable_yn = request.POST.get("applicable_yn")
+
+        procedure.doc_ref_name = request.POST.get("doc_ref_name", "")
+        if request.FILES.get("doc_ref_file"):
+            procedure.doc_ref_file = request.FILES["doc_ref_file"]
+
+        procedure.evidence_ref_name = request.POST.get("evidence_ref_name", "")
+        if request.FILES.get("evidence_ref_file"):
+            procedure.evidence_ref_file = request.FILES["evidence_ref_file"]
+
+        procedure.client_comments = request.POST.get("client_comments", "")
+        procedure.qsa_remarks = request.POST.get("qsa_remarks", "")
+
+        procedure.save()
+
+    return redirect(f"/?rid={procedure.requirement_id}")
 
 def _depth(req_id: str) -> int:
     # "1.2" -> 2 parts => depth 2, "1.2.8" -> depth 3, etc.
     return len(req_id.split("."))
 
-def home(request):
+@ms_identity_web.login_required
+def test(request):
     all_reqs = list(PCIRequirement.objects.all())
 
     # Build parent -> children mapping (only immediate children)
@@ -64,6 +115,7 @@ def home(request):
 })
 
 
+@ms_identity_web.login_required
 def panel(request, rid):
     selected = get_object_or_404(PCIRequirement, requirement_id=rid)
     procedures = list(selected.procedures.all())
@@ -78,8 +130,8 @@ def panel(request, rid):
 
 
 
-# def pci_requirements_list(request):
-#     return render(request, "app/home.html")
+def index(request):
+    return render(request, "app/index.html")
 
 # def test_home(request):
 #     return render(request, "app/home_1.html")

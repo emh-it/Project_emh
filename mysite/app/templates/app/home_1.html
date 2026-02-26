@@ -9,18 +9,27 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
     />
     <style>
-      body {
+      html, body {
+        height: 100vh;
+        margin: 0;
+        padding: 0;
         background: #f4f4f4;
+        overflow: hidden;
       }
 
       .header-bar {
-        background: #e1701a;
-        color: #222;
+        background: #03806f;
+        color: #ffffff;
         text-align: center;
         font-weight: bold;
         font-size: 1.3rem;
         padding: 8px 0;
         margin-bottom: 0;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+         flex-shrink: 0;
       }
 
       .main-table,
@@ -101,37 +110,84 @@
       .req-row.child-req td:first-child {
         padding-left: 18px;
       }
+
+      /* Split scrollable grids layout */
+      .split-container {
+        display: flex;
+        height: calc(100vh - 40px);
+        overflow: hidden;
+        margin: 0;
+        width: 100%;
+      }
+
+      .left-grid {
+        width: 320px;
+        min-width: 180px;
+        max-width: 400px;
+        background: #fff;
+        border-right: 1px solid #ddd;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+        flex-shrink: 0;
+      }
+
+      .right-grid {
+        flex: 1;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 24px 24px 24px 24px;
+        background: #f4f4f4;
+        scroll-behavior: smooth;
+        margin: 0;
+      }
+
+      @media (max-width: 900px) {
+        .left-grid {
+          width: 120px;
+          min-width: 80px;
+        }
+        .right-grid {
+          padding: 8px 2px;
+        }
+      }
     </style>
   </head>
 
   <body>
     <div class="header-bar">PCI DSS Report on Compliance</div>
-
-    <div class="row" style="margin-bottom: 0">
-      <!-- LEFT -->
-      <div class="container_left">
-        <div class="col s3">
-          <table style="width: 100%; border: none">
-            <tr>
-              <th class="req-header" colspan="2">PCI Requirements</th>
-            </tr>
-
-            {% for kind, r in sidebar_items %}
-            <tr
-              class="req-row {% if selected and r.requirement_id == selected.requirement_id %}active{% endif %} {% if kind == 'child' %}child-req{% endif %}"
-              data-rid="{{ r.requirement_id }}"
-              onclick="loadPanel('{{ r.requirement_id }}')"
-            >
-              <td style="width: 70px">{{ r.requirement_id }}</td>
-
-              <td>{{ r.requirement_text }}</td>
-            </tr>
-            {% endfor %}
-          </table>
-        </div>
+    <div class="split-container">
+      <!-- LEFT GRID (Sidebar) -->
+      <div class="left-grid">
+        <table style="width: 100%; border: none">
+          <tr>
+            <th class="req-header" colspan="2">PCI Requirements</th>
+          </tr>
+          {% for kind, r in sidebar_items %}
+          <tr
+            class="req-row {% if selected and r.requirement_id == selected.requirement_id %}active{% endif %} {% if kind == 'child' %}child-req{% endif %}"
+            data-rid="{{ r.requirement_id }}"
+            onclick="loadPanel('{{ r.requirement_id }}')"
+          >
+            <td style="width: 70px">{{ r.requirement_id }}</td>
+            <td>
+              {% with r.requirement_text|default_if_none:"" as text %}
+                {% if text %}
+                  {{ text|truncatewords:6 }}
+                {% else %}
+                  &mdash;
+                {% endif %}
+              {% endwith %}
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
       </div>
-      <!-- RIGHT -->
-      <div class="col s9" id="right-panel">{% include "app/panel.html" %}</div>
+      <!-- RIGHT GRID (Main Content) -->
+      <div class="right-grid" id="right-panel">{% include "app/panel.html" %}</div>
     </div>
 
     <script>
@@ -140,6 +196,14 @@
         const data = await res.json();
 
         document.getElementById("right-panel").innerHTML = data.html;
+
+        // Scroll to top of the right grid after DOM update
+        setTimeout(() => {
+          const rightGrid = document.querySelector('.right-grid');
+          if (rightGrid) {
+            rightGrid.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+          }
+        }, 0);
 
         // sidebar active highlight
         document

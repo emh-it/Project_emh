@@ -21,8 +21,132 @@
                             {{ selected.requirement_text }}
                         </td>
                     </tr>
+                    {% for p in procedures %}
+                    
+                    <form method="POST" action="{% url 'save_procedure' p.id %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                    
+                        <!-- Testing Procedure -->
+                        <tr>
+                            <th>Testing Procedure</th>
+                            <td colspan="5">
+                                <b>{{ p.procedure_id }}</b> {{ p.procedure_text }}
+                            </td>
+                        </tr>
+                    
+                        <!--Guidance -->
+                         <tr>
+                            <th>Guidance</th>
+                            <td colspan="5">{{ p.reporting_instruction }}</td>
+                        </tr> 
+                    
+                        <!-- Scope + Y/N -->
+                        <tr>
+                            <th>Applicability</th>
+                            <td colspan="1 ">
+                                <label>
+                                    <input type="radio" name="scope_{{ p.id }}" value="in" {% if p.scope == "in" %}checked{% endif %}>
+                                    <span>In Scope</span>
+                                </label>
+                    
+                                <label>
+                                    <input type="radio" name="scope_{{ p.id }}" value="out" {% if p.scope == "out" %}checked{% endif %}>
+                                    <span>Out of Scope</span>
+                                </label>
+                    
+                                <label>
+                                    <input type="radio" name="scope_{{ p.id }}" value="na" {% if p.scope == "na" %}checked{% endif %}>
+                                    <span>N/A</span>
+                                </label>
+                            </td>
+                    
+                            <th>Compliant ?</th>
+                            <td>
+                                <label>
+                                    <input type="radio" name="compliant_yn_{{ p.id }}" value="Y" {% if p.compliant_yn == "Y" %}checked{% endif %}>
+                                    <span>Yes</span>
+                                </label>
+                                <label>
+                                    <input type="radio" name="compliant_yn_{{ p.id }}" value="N" {% if p.compliant_yn == "N" %}checked{% endif %}>
+                                    <span>No</span>
+                                </label>
+                            </td>
+                        </tr>
+                    
+                        <!-- Document Upload -->
+                        <tr>
+                            <th>Doc Ref</th>
+                            <td>
+                                <input type="file" name="doc_ref_file">
+                                {% if p.doc_ref_file %}
+                                <div>
+                                    <a href="{{ p.doc_ref_file.url }}" target="_blank">View Current</a>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <th>BAU ?</th>
+                            <td>
+                                <label>
+                                    <input type="radio" name="bau_{{ p.id }}" value="Y" {% if p.bau == "Y" %}checked{% endif %}>
+                                    <span>Yes</span>
+                                </label>
+                                <label>
+                                    <input type="radio" name="bau_{{ p.id }}" value="N" {% if p.bau == "N" %}checked{% endif %}>
+                                    <span>No</span>
+                                </label>
+                            </td>
+                        </tr>
+                    
+                        <!-- Evidence Upload -->
+                        <tr>
+                            <th>Evidence Ref</th>
+                            <td>
+                                <input type="file" name="evidence_ref_file">
+                                {% if p.evidence_ref_file %}
+                                <div>
+                                    <a href="{{ p.evidence_ref_file.url }}" target="_blank">View Current</a>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    
+                        <!-- Comments -->
+                        <tr>
+                            <th>Client Comments</th>
+                            <td colspan="5">
+                                <textarea name="client_comments" rows="2" style="width:100%;">{{ p.client_comments }}</textarea>
+                            </td>
+                        </tr>
+                    
+                        <!-- QSA Remarks -->
+                        <tr>
+                            <th>QSA Remarks</th>
+                            <td colspan="5">
+                                <textarea name="qsa_remarks" rows="2" style="width:100%;">{{ p.qsa_remarks }}</textarea>
+                            </td>
+                        </tr>
+                    
+                        <!-- Save Button -->
+                        <tr>
+                            <td colspan="6" style="text-align:right;">
+                                <button type="submit" class="btn waves-effect waves-light">
+                                    Save
+                                </button>
+                            </td>
+                        </tr>
+                    
+                    </form>
+                    
+                    {% if not forloop.last %}
+                    <tr>
+                        <td colspan="6" style="background:#eaf3fa; height:8px;"></td>
+                    </tr>
+                    {% endif %}
+                    
+                    {% endfor %}
 
-                    {% if procedures %}
+
+                    <!-- {% if procedures %}
                     {% for p in procedures %}
                     <tr>
                         <th>Testing Procedure</th>
@@ -35,40 +159,8 @@
                         <td colspan="5">{{ p.reporting_instruction }}</td>
                     </tr>
 
-                    <!-- placeholders -->
-                    <tr>
-                        <th>Applicability</th>
-                        <td colspan="3"></td>
-                        <th class="scope-col">Scope</th>
-                        <td class="yn-col">Y/N</td>
-                    </tr>
-                    <tr>
-                        <th>Doc Ref</th>
-                        <th>Name</th>
-                        <td colspan="3"></td>
-                        <th>Upload</th>
-                    </tr>
-                    <tr>
-                        <th>Evidence Ref</th>
-                        <th>Name</th>
-                        <td colspan="2"></td>
-                        <th>Upload</th>
-                    </tr>
-                    <tr>
-                        <th>Client Comments</th>
-                        <td colspan="5"></td>
-                    </tr>
-                    <tr>
-                        <th>QSA Remarks</th>
-                        <td colspan="5"></td>
-                    </tr>
-
-                    {% if not forloop.last %}
-                    <tr>
-                        <td colspan="6" style="background:#eaf3fa; height:8px;"></td>
-                    </tr>
-                    {% endif %}
-                    {% endfor %}
+                    placeholders
+                    {% endfor %} -->
                     {% else %}
                     <tr>
                         <th>Testing Procedure</th>
