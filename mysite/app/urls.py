@@ -12,7 +12,8 @@ urlpatterns = [
     # path('', include('core.urls')),  # Include core app URLs
     path('test/', views.test, name='test'),
     path("panel/<str:rid>/", views.panel, name="panel"),
-    path("procedure/save/<int:pid>/", views.save_procedure, name="save_procedure"),
+    # path("procedure/save/<int:pid>/", views.save_procedure, name="save_procedure"),
+    path("procedure/save/", views.save_procedure_bulk, name="save_procedure_bulk"),
     path("procedure/delete-file/<int:pid>/<str:field>/", views.delete_file, name="delete_file"),
     path('microsoft/', include('microsoft_auth.urls'), name='microsoft'),
     path(f'{settings.AAD_CONFIG.django.auth_endpoints.prefix}/', include(msal_urlpatterns)),

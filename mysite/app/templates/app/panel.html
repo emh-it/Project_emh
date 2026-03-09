@@ -8,12 +8,11 @@
     </tr>
     {% else %}
     <tr>
-        <th colspan="2" style="text-align: left">{{ selected.requirement_id }}</th>
-    </tr>
-
-    <tr>
         <td colspan="2" style="vertical-align: top">
-            <div>
+            <form method="POST" action="{% url 'save_procedure_bulk' %}" enctype="multipart/form-data" id="bulk_form">
+                {% csrf_token %}
+                <input type="hidden" name="requirement_id" value="{{ selected.requirement_id }}">
+                <input type="hidden" name="client_id" value="{{ selected_client_id }}">
                 <table class="section-table" style="width: 100%; margin-bottom: 10px">
                     <tr>
                         <td colspan="6" class="desc-cell">
@@ -22,156 +21,107 @@
                         </td>
                     </tr>
                     {% for p in procedures %}
-                    
-                    <form method="POST" action="{% url 'save_procedure' p.id %}" enctype="multipart/form-data">
-                        {% csrf_token %}
-                    
-                        <!-- Testing Procedure -->
-                        <tr>
-                            <th>Testing Procedure</th>
-                            <td colspan="5">
-                                <b>{{ p.procedure_id }}</b> {{ p.procedure_text }}
-                            </td>
-                        </tr>
-                    
-                        <!--Guidance -->
-                         <tr>
-                            <th>Guidance</th>
-                            <td colspan="5">{{ p.reporting_instruction }}</td>
-                        </tr> 
-                    
-                        <!-- Scope + Y/N -->
-                        <tr>
-                            <th>Applicability</th>
-                            <td colspan="1 ">
-                                <label>
-                                    <input type="radio" name="scope_{{ p.id }}" value="in" {% if p.scope == "in" %}checked{% endif %}>
-                                    <span>In Scope</span>
-                                </label>
-                    
-                                <label>
-                                    <input type="radio" name="scope_{{ p.id }}" value="out" {% if p.scope == "out" %}checked{% endif %}>
-                                    <span>Out of Scope</span>
-                                </label>
-                    
-                                <label>
-                                    <input type="radio" name="scope_{{ p.id }}" value="na" {% if p.scope == "na" %}checked{% endif %}>
-                                    <span>N/A</span>
-                                </label>
-                            </td>
-                    
-                            <th>Compliant ?</th>
-                            <td>
-                                <label>
-                                    <input type="radio" name="compliant_yn_{{ p.id }}" value="Y" {% if p.compliant_yn == "Y" %}checked{% endif %}>
-                                    <span>Yes</span>
-                                </label>
-                                <label>
-                                    <input type="radio" name="compliant_yn_{{ p.id }}" value="N" {% if p.compliant_yn == "N" %}checked{% endif %}>
-                                    <span>No</span>
-                                </label>
-                            </td>
-                        </tr>
-                    
-                        <!-- Document Upload -->
-                        <tr>
-                            <th>Doc Ref</th>
-                            <td>
-                                <input type="file" name="doc_ref_file">
-                                {% if p.doc_ref_file %}
-                                <div>
-                                    <a href="{{ p.doc_ref_file.url }}" target="_blank">View Current</a>
-                                </div>
-                                {% endif %}
-                            </td>
-                            <th>BAU ?</th>
-                            <td>
-                                <label>
-                                    <input type="radio" name="bau_{{ p.id }}" value="Y" {% if p.bau == "Y" %}checked{% endif %}>
-                                    <span>Yes</span>
-                                </label>
-                                <label>
-                                    <input type="radio" name="bau_{{ p.id }}" value="N" {% if p.bau == "N" %}checked{% endif %}>
-                                    <span>No</span>
-                                </label>
-                            </td>
-                        </tr>
-                    
-                        <!-- Evidence Upload -->
-                        <tr>
-                            <th>Evidence Ref</th>
-                            <td>
-                                <input type="file" name="evidence_ref_file">
-                                {% if p.evidence_ref_file %}
-                                <div>
-                                    <a href="{{ p.evidence_ref_file.url }}" target="_blank">View Current</a>
-                                </div>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    
-                        <!-- Comments -->
-                        <tr>
-                            <th>Client Comments</th>
-                            <td colspan="5">
-                                <textarea name="client_comments" rows="2" style="width:100%;">{{ p.client_comments }}</textarea>
-                            </td>
-                        </tr>
-                    
-                        <!-- QSA Remarks -->
-                        <tr>
-                            <th>QSA Remarks</th>
-                            <td colspan="5">
-                                <textarea name="qsa_remarks" rows="2" style="width:100%;">{{ p.qsa_remarks }}</textarea>
-                            </td>
-                        </tr>
-                    
-                        <!-- Save Button -->
-                        <tr>
-                            <td colspan="6" style="text-align:right;">
-                                <button type="submit" class="btn waves-effect waves-light">
-                                    Save
-                                </button>
-                            </td>
-                        </tr>
-                    
-                    </form>
-                    
-                    {% if not forloop.last %}
-                    <tr>
-                        <td colspan="6" style="background:#eaf3fa; height:8px;"></td>
-                    </tr>
-                    {% endif %}
-                    
-                    {% endfor %}
-
-
-                    <!-- {% if procedures %}
-                    {% for p in procedures %}
+                    {% if p.procedure and p.procedure.id %}
+                    <!-- Testing Procedure -->
                     <tr>
                         <th>Testing Procedure</th>
                         <td colspan="5">
-                            <b>{{ p.procedure_id }}</b> {{ p.procedure_text }}
+                            <b>{{ p.procedure.procedure_id }}</b> {{ p.procedure.procedure_text }}
                         </td>
                     </tr>
+                    <!-- Guidance -->
                     <tr>
                         <th>Guidance</th>
-                        <td colspan="5">{{ p.reporting_instruction }}</td>
+                        <td colspan="5">{{ p.procedure.reporting_instruction }}</td>
                     </tr>
-
-                    placeholders
-                    {% endfor %} -->
-                    {% else %}
+                    <!-- Scope + Y/N -->
                     <tr>
-                        <th>Testing Procedure</th>
+                        <th>Applicability</th>
+                        <td colspan="1">
+                            <label>
+                                <input type="radio" name="scope_{{ p.procedure.id }}" value="in" {% if p.assess and p.assess.scope == "in" %}checked{% endif %}>
+                                <span>In Scope</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="scope_{{ p.procedure.id }}" value="out" {% if p.assess and p.assess.scope == "out" %}checked{% endif %}>
+                                <span>Out of Scope</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="scope_{{ p.procedure.id }}" value="na" {% if p.assess and p.assess.scope == "na" %}checked{% endif %}>
+                                <span>N/A</span>
+                            </label>
+                        </td>
+                        <th>Compliant ?</th>
+                        <td>
+                            <label>
+                                <input type="radio" name="compliant_yn_{{ p.procedure.id }}" value="Y" {% if p.assess and p.assess.compliant_yn == "Y" %}checked{% endif %}>
+                                <span>Yes</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="compliant_yn_{{ p.procedure.id }}" value="N" {% if p.assess and p.assess.compliant_yn == "N" %}checked{% endif %}>
+                                <span>No</span>
+                            </label>
+                        </td>
+                    </tr>
+                    <!-- Document Upload -->
+                    <tr>
+                        <th>Doc Ref</th>
+                        <td>
+                            <input type="file" name="doc_ref_file_{{ p.procedure.id }}">
+                            {% if p.assess and p.assess.doc_ref_file %}
+                            <div>
+                                <a href="{{ p.assess.doc_ref_file.url }}" target="_blank">View Current</a>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <th>BAU ?</th>
+                        <td>
+                            <label>
+                                <input type="radio" name="bau_{{ p.procedure.id }}" value="Y" {% if p.assess and p.assess.bau == "Y" %}checked{% endif %}>
+                                <span>Yes</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="bau_{{ p.procedure.id }}" value="N" {% if p.assess and p.assess.bau == "N" %}checked{% endif %}>
+                                <span>No</span>
+                            </label>
+                        </td>
+                    </tr>
+                    <!-- Evidence Upload -->
+                    <tr>
+                        <th>Evidence Ref</th>
+                        <td>
+                            <input type="file" name="evidence_ref_file_{{ p.procedure.id }}">
+                            {% if p.assess and p.assess.evidence_ref_file %}
+                            <div>
+                                <a href="{{ p.assess.evidence_ref_file.url }}" target="_blank">View Current</a>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <!-- Comments -->
+                    <tr>
+                        <th>Client Comments</th>
                         <td colspan="5">
-                            No testing procedures found for this requirement.
-                            <br />If this is a parent requirement, select a sub-requirement from the left.
+                            <textarea name="client_comments_{{ p.procedure.id }}" rows="2" style="width:100%;">{% if p.assess %}{{ p.assess.client_comments|default_if_none:"" }}{% endif %}</textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>QSA notes</th>
+                        <td colspan="5">
+                            <textarea name="qsa_remarks_{{ p.procedure.id }}" rows="2" style="width:100%;">{% if p.assess %}{{ p.assess.qsa_remarks|default_if_none:"" }}{% endif %}</textarea>
                         </td>
                     </tr>
                     {% endif %}
+                    {% endfor %}
+                    <tr>
+                        <td colspan="6" style="text-align:right;">
+                            <button type="submit" class="btn waves-effect waves-light">
+                                Save All
+                            </button>
+                        </td>
+                    </tr>
                 </table>
-            </div>
+            </form>
         </td>
     </tr>
     {% endif %}

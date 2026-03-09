@@ -9,7 +9,8 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
     />
     <style>
-      html, body {
+      html,
+      body {
         height: 100vh;
         margin: 0;
         padding: 0;
@@ -29,7 +30,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-         flex-shrink: 0;
+        flex-shrink: 0;
       }
 
       .main-table,
@@ -174,7 +175,7 @@
           >
             <td style="width: 70px">{{ r.requirement_id }}</td>
             <td>
-              {% with r.requirement_text|default_if_none:"" as text %}
+              {% with text=r.requirement_text|default_if_none:"" %}
                 {% if text %}
                   {{ text|truncatewords:6 }}
                 {% else %}
@@ -186,22 +187,37 @@
           {% endfor %}
         </table>
       </div>
+      <div style="margin: 20px 0; padding: 12px; background: #f4f8fa; border-radius: 6px;">
+        <b>Select Client:</b>
+        <select id="client_select">
+          {% for client in clients %}
+          <option value="{{ client.client_id }}" {% if client.client_id == selected_client_id %}selected{% endif %}>
+            {{ client.client_id }} - {{ client.client_name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
       <!-- RIGHT GRID (Main Content) -->
-      <div class="right-grid" id="right-panel">{% include "app/panel.html" %}</div>
+      <div class="right-grid" id="right-panel">
+        {% include "app/panel.html" %}
+      </div>
     </div>
+
+   
 
     <script>
       async function loadPanel(rid) {
-        const res = await fetch(`/panel/${rid}/`);
+        const clientId = document.getElementById('client_select').value;
+        const res = await fetch(`/panel/${rid}/?client_id=${clientId}`);
         const data = await res.json();
 
         document.getElementById("right-panel").innerHTML = data.html;
 
         // Scroll to top of the right grid after DOM update
         setTimeout(() => {
-          const rightGrid = document.querySelector('.right-grid');
+          const rightGrid = document.querySelector(".right-grid");
           if (rightGrid) {
-            rightGrid.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+            rightGrid.scrollTo({ top: 0, left: 0, behavior: "smooth" });
           }
         }, 0);
 
@@ -211,7 +227,30 @@
           .forEach((el) => el.classList.remove("active"));
         const active = document.querySelector(`.req-row[data-rid="${rid}"]`);
         if (active) active.classList.add("active");
+
+        // Re-initialize Materialize selects after AJAX content load
+        var elems = document.querySelectorAll("#right-panel select");
+        M.FormSelect.init(elems);
       }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var elems = document.querySelectorAll("select");
+        M.FormSelect.init(elems);
+      });
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+    var clientSelect = document.getElementById('client_select');
+    if (clientSelect) {
+        clientSelect.addEventListener('change', function() {
+            var url = new URL(window.location.href);
+            url.searchParams.set('client_id', this.value);
+            window.location.href = url.toString();
+        });
+    }
+});
     </script>
   </body>
 </html>
