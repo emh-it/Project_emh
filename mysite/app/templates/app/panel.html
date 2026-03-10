@@ -100,13 +100,13 @@
                     </tr>
                     <!-- Comments -->
                     <tr>
-                        <th>Client Comments</th>
+                        <th>Audit Notes</th>
                         <td colspan="5">
                             <textarea name="client_comments_{{ p.procedure.id }}" rows="2" style="width:100%;">{% if p.assess %}{{ p.assess.client_comments|default_if_none:"" }}{% endif %}</textarea>
                         </td>
                     </tr>
                     <tr>
-                        <th>QSA notes</th>
+                        <th>Reporting Summary</th>
                         <td colspan="5">
                             <textarea name="qsa_remarks_{{ p.procedure.id }}" rows="2" style="width:100%;">{% if p.assess %}{{ p.assess.qsa_remarks|default_if_none:"" }}{% endif %}</textarea>
                         </td>

@@ -114,8 +114,17 @@ DATABASES = {
         "PASSWORD": os.environ["DB_PASSWORD"],
         "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
         "PORT": os.environ.get("DB_PORT", "5432"),
+    },
+    "replica":{
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ["DB_NAME_REPLICA"],
+        "USER": os.environ["DB_USER_REPLICA"],
+        "PASSWORD": os.environ["DB_PASSWORD_REPLICA"],
+        "HOST": os.environ.get("DB_HOST_REPLICA", "127.0.0.1"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
     }
 }
+DATABASE_ROUTERS = ["mysite.db_router.PrimaryReplicaRouter"]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
