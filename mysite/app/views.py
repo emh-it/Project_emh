@@ -22,6 +22,64 @@ ms_identity_web = settings.MS_IDENTITY_WEB
 
 
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import PCIRequirement
+from .serializer import (
+    RequirementSerializer,
+    ClientSerializer,
+    ClientPCIDataResponseSerializer,
+)
+
+
+class TestAPIView(APIView):
+    def get(self, request):
+        requirements = PCIRequirement.objects.all()
+        serializer = RequirementSerializer(requirements, many=True)
+        return Response(serializer.data)
+
+
+class ClientListAPIView(APIView):
+    def get(self, request):
+        clients = client_data.objects.all()
+        serializer = ClientSerializer(clients, many=True)
+        return Response(serializer.data)
+
+
+class ClientPCIDataAPIView(APIView):
+    def get(self, request, client_id):
+        client = get_object_or_404(client_data, client_id=client_id)
+        requirements = PCIRequirement.objects.all().prefetch_related("procedures")
+        client_inputs = pci_assess_data.objects.filter(client=client)
+
+        assess_map = {
+            (entry.requirement_id, entry.procedure_id): entry
+            for entry in client_inputs
+        }
+
+        requirement_payload = []
+        for requirement in requirements:
+            procedures_payload = []
+            for procedure in requirement.procedures.all():
+                procedures_payload.append({
+                    "procedure": procedure,
+                    "client_input": assess_map.get((requirement.requirement_id, procedure.procedure_id)),
+                })
+
+            requirement_payload.append({
+                "requirement_id": requirement.requirement_id,
+                "requirement_text": requirement.requirement_text,
+                "procedures": procedures_payload,
+            })
+
+        response_payload = {
+            "client": client,
+            "requirements": requirement_payload,
+        }
+        serializer = ClientPCIDataResponseSerializer(response_payload, context={"request": request})
+        return Response(serializer.data)
+
+
 @require_POST
 def delete_file(request, pid, field):
     procedure = get_object_or_404(PCITestingProcedure, id=pid)
@@ -142,7 +200,8 @@ def test(request):
 def panel(request, rid):
     selected = get_object_or_404(PCIRequirement, requirement_id=rid)
     procedures = list(selected.procedures.all())
-    client_id = request.GET.get('client_id')  # or however you get the client
+    # client_id = request.GET.get('client_id')
+    client_id  = 1 
     print("Client ID in panel view:", client_id)
     combined = []
     for proc in procedures:

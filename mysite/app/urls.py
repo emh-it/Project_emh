@@ -3,6 +3,8 @@ from . import views
 from django.conf import settings
 from django.conf.urls.static import static
 from ms_identity_web.django.msal_views_and_urls import MsalViews
+from .views import TestAPIView, ClientListAPIView, ClientPCIDataAPIView
+
 
 msal_urlpatterns = MsalViews(settings.MS_IDENTITY_WEB).url_patterns()
 urlpatterns = [
@@ -17,6 +19,9 @@ urlpatterns = [
     path("procedure/delete-file/<int:pid>/<str:field>/", views.delete_file, name="delete_file"),
     path('microsoft/', include('microsoft_auth.urls'), name='microsoft'),
     path(f'{settings.AAD_CONFIG.django.auth_endpoints.prefix}/', include(msal_urlpatterns)),
+    path('api/test/', TestAPIView.as_view(), name='test-api'),      
+    path('api/clients/', ClientListAPIView.as_view(), name='api-clients'),
+    path('api/clients/<str:client_id>/pci-data/', ClientPCIDataAPIView.as_view(), name='api-client-pci-data'),
     # path("procedure/save/<int:pid>/", views.save_selected_procedure, name="save_selected_procedure"),
 
     # path('about/', views.about, name='about'),
